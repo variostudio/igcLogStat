@@ -2,12 +2,12 @@ import folium
 
 
 def convert(str_coord):
-    deg = str_coord[0:2]
+    degrees = str_coord[0:2]
     ll = len(str_coord)
     three_last = str_coord[ll - 3:ll]
-    mins = str_coord[2:ll - 3]
+    minutes = str_coord[2:ll - 3]
 
-    res = int(deg) + int(mins)/60 + int(three_last)/60/1000
+    res = int(degrees) + int(minutes)/60 + int(three_last)/60/1000
     return res
 
 
@@ -31,6 +31,6 @@ if __name__ == '__main__':
 
     base_map = folium.Map(points[0], zoom_start=14)
     folium.PolyLine(
-        points, color='darkorange'
+        points, color='orange'
     ).add_to(base_map)
     base_map.save('test.html')
