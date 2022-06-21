@@ -40,36 +40,41 @@ def parse_igc_line(file_item, pts, alts, rates):
         pts.append([n_lat, n_lon])
 
 
+def get_min_max_rates(cl_rate):
+    climb = climb_rate[0]
+    sink = climb_rate[0]
+    for rate in cl_rate:
+        if rate > climb:
+            climb = rate
+        if rate < sink:
+            sink = rate
+    return sink, climb
+
+
 if __name__ == '__main__':
     points = []
     alt_data = []
     climb_rate = []
+    colors = ['b', 'c', 'y', 'r', 'r']
 
-    with open('files/file1.igc') as f:
+    with open('files/file3.igc') as f:
         for line in f:
             parse_igc_line(line, points, alt_data, climb_rate)
 
     base_map = folium.Map(points[0], zoom_start=14)
 
-    max_climb = climb_rate[0]
-    min_sink = climb_rate[0]
-    for rate in climb_rate:
-        if rate > max_climb:
-            max_climb = rate
-        if rate < min_sink:
-            min_sink = rate
+    min_sink, max_climb = get_min_max_rates(climb_rate)
 
-    print(max_climb, min_sink)
-
-    cm = ['b', 'c', 'y', 'r', 'r']
     steps = int(max_climb-min_sink)
 
+    # Append track to the map
     folium.ColorLine(
-        points, climb_rate, colormap=cm, nb_steps=steps,
+        points, climb_rate, colormap=colors, nb_steps=steps,
         weight=5
     ).add_to(base_map)
 
-    c_map = LinearColormap(cm, vmin=min_sink, vmax=max_climb).to_step(steps)
+    # Append color legend to the map
+    c_map = LinearColormap(colors, vmin=min_sink, vmax=max_climb).to_step(steps)
     c_map.caption = "Sink/Climb Rates [m/s]"
     c_map.add_to(base_map)
 
