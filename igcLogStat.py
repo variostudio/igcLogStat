@@ -1,3 +1,4 @@
+import argparse
 import folium
 from branca.colormap import LinearColormap
 
@@ -51,31 +52,46 @@ def get_min_max_rates(cl_rate):
     return sink, climb
 
 
-if __name__ == '__main__':
-    points = []
+def parse_file(file_name):
+    pts = []
     alt_data = []
-    climb_rate = []
-    colors = ['b', 'c', 'y', 'r', 'r']
+    climb_rates = []
 
-    with open('files/file3.igc') as f:
+    print('Processing {}'.format(file_name))
+    with open(file_name) as f:
         for line in f:
-            parse_igc_line(line, points, alt_data, climb_rate)
+            parse_igc_line(line, pts, alt_data, climb_rates)
 
-    base_map = folium.Map(points[0], zoom_start=14)
+    return pts, climb_rates
 
-    min_sink, max_climb = get_min_max_rates(climb_rate)
 
-    steps = int(max_climb-min_sink)
+def draw_map(pts, climb):
+    colors = ['b', 'c', 'y', 'r', 'r']
+    base_map = folium.Map(pts[0], zoom_start=15)
 
-    # Append track to the map
+    min_sink, max_climb = get_min_max_rates(climb)
+    steps = int(max_climb - min_sink)
+
     folium.ColorLine(
-        points, climb_rate, colormap=colors, nb_steps=steps,
-        weight=5
+        pts, climb, colormap=colors, nb_steps=steps, weight=5
     ).add_to(base_map)
 
-    # Append color legend to the map
     c_map = LinearColormap(colors, vmin=min_sink, vmax=max_climb).to_step(steps)
-    c_map.caption = "Sink/Climb Rates [m/s]"
+    c_map.caption = "Sink/Climb Rate [m/s]"
     c_map.add_to(base_map)
 
-    base_map.save('test.html')
+    base_map.save('{}.html'.format(args.file))
+    print('File {}.html saved'.format(args.file))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(prog='igcLogStat')
+    parser.add_argument('file', help='IGC file to analyze')
+    args = parser.parse_args()
+
+    if args.file is None:
+        parser.print_help()
+    else:
+        points, climb_rate = parse_file(args.file)
+
+        draw_map(points, climb_rate)
