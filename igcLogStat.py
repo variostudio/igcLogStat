@@ -9,7 +9,7 @@ def convert(str_coord):
     three_last = str_coord[ll - 3:ll]
     minutes = str_coord[2:ll - 3]
 
-    res = int(degrees) + int(minutes)/60 + int(three_last)/60/1000
+    res = int(degrees) + int(minutes) / 60 + int(three_last) / 60 / 1000
     return res
 
 
@@ -65,15 +65,42 @@ def parse_file(file_name):
     return pts, climb_rates
 
 
+def col_str(x):
+    t = x * 3
+    if t > 1:
+        t = 1
+
+    return ("0x%0.2X" % int(255 * t))[2:4]
+
+
+def map_color(curr_val, min_val, max_val):
+    color = ''
+
+    if curr_val < 0:
+        color = '#0000' + col_str(curr_val / min_val)
+    if curr_val >= 0:
+        color = '#' + col_str(curr_val / max_val) + '0000'
+
+    print('Current color: {}'.format(color))
+    return color
+
+
 def draw_map(pts, climb):
-    colors = ['b', 'c', 'y', 'r', 'r']
+    colors = []
     base_map = folium.Map(pts[0], zoom_start=15)
 
     min_sink, max_climb = get_min_max_rates(climb)
     steps = int(max_climb - min_sink)
 
+    cnt = min_sink
+    while cnt < max_climb:
+        colors.append(map_color(cnt, min_sink, max_climb))
+        cnt += 1
+
+    print('Max climb: {}, Min sink: {}'.format(max_climb, min_sink))
+
     folium.ColorLine(
-        pts, climb, colormap=colors, nb_steps=steps, weight=5
+        pts, climb, colormap=colors, nb_steps=steps, weight=3
     ).add_to(base_map)
 
     c_map = LinearColormap(colors, vmin=min_sink, vmax=max_climb).to_step(steps)
