@@ -66,7 +66,7 @@ def parse_file(file_name):
 
 
 def col_str(x):
-    t = x * 3
+    t = x * 5
     if t > 1:
         t = 1
 
@@ -76,10 +76,15 @@ def col_str(x):
 def map_color(curr_val, min_val, max_val):
     color = ''
 
-    if curr_val < 0:
-        color = '#0000' + col_str(curr_val / min_val)
-    if curr_val >= 0:
-        color = '#' + col_str(curr_val / max_val) + '0000'
+    if 0 > curr_val > min_val / 2:
+        color = '#00' + col_str(curr_val / min_val) + '00'  # Green
+    if curr_val <= min_val / 2:
+        color = '#0000' + col_str(curr_val / min_val)  # Blue
+    if 0 <= curr_val < max_val / 2:
+        curr_val += 1
+        color = '#' + col_str(curr_val / max_val) + col_str(curr_val / max_val) + '00'  # Yellow
+    if curr_val >= max_val / 2:
+        color = '#' + col_str(curr_val / max_val) + '0000'  # Red
 
     print('Current color: {}'.format(color))
     return color
