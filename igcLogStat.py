@@ -53,6 +53,50 @@ def get_min_max_rates(cl_rate):
     return sink, climb
 
 
+def get_max_gain(alt_data):
+    i = 0
+    cur_min = 100000
+    min_time = 0
+    cur_max = 0
+    max_time = 0
+
+    max_gain_delta = 0
+    max_gain_min_alt = 0
+    max_gain_max_alt = 0
+    max_gain_start = 0
+    max_gain_end = 0
+
+    for time, alt in alt_data:
+        i += 1
+        if i > 300:
+            if alt < cur_min:
+                cur_gain = cur_max - cur_min
+
+                if cur_gain > max_gain_delta:
+                    max_gain_delta = cur_gain
+                    max_gain_start = min_time
+                    max_gain_end = max_time
+                    max_gain_min_alt = cur_min
+                    max_gain_max_alt = cur_max
+
+                cur_min = alt
+                min_time = time
+                cur_max = 0
+                max_time = 0
+
+            if alt > cur_max:
+                cur_max = alt
+                max_time = time
+
+    print("Max gain: {}, start: {}, min alt: {}, end: {}, max alt: {}".format(max_gain_delta,
+                                                    format(datetime.timedelta(seconds=max_gain_start)),
+                                                    format(max_gain_min_alt),
+                                                    format(datetime.timedelta(seconds=max_gain_end)),
+                                                    format(max_gain_max_alt)))
+
+    return max_gain_delta
+
+
 def parse_file(file_name):
     pts = []
     alt_data = []
@@ -63,7 +107,7 @@ def parse_file(file_name):
         for line in f:
             parse_igc_line(line, pts, alt_data, climb_rates)
 
-    return pts, climb_rates, alt_data[-1][0]-alt_data[0][0]
+    return pts, climb_rates, alt_data[-1][0]-alt_data[0][0], get_max_gain(alt_data)
 
 
 def col_str(x):
@@ -87,7 +131,6 @@ def map_color(curr_val, min_val, max_val):
     if curr_val >= max_val / 2:
         color = '#' + col_str(curr_val / max_val) + '0000'  # Red
 
-    print('Current color: {}'.format(color))
     return color
 
 
@@ -125,8 +168,9 @@ if __name__ == '__main__':
     if args.file is None:
         parser.print_help()
     else:
-        points, climb_rate, duration = parse_file(args.file)
+        points, climb_rate, duration, max_gain = parse_file(args.file)
 
         draw_map(points, climb_rate)
 
         print("Duration of the flight: {}".format(datetime.timedelta(seconds=duration)))
+        print("Max altitude gain of the flight: {}".format(max_gain))
