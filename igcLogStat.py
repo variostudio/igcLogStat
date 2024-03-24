@@ -1,5 +1,6 @@
 import argparse
 import folium
+import datetime
 from branca.colormap import LinearColormap
 
 
@@ -62,7 +63,7 @@ def parse_file(file_name):
         for line in f:
             parse_igc_line(line, pts, alt_data, climb_rates)
 
-    return pts, climb_rates
+    return pts, climb_rates, alt_data[-1][0]-alt_data[0][0]
 
 
 def col_str(x):
@@ -124,6 +125,8 @@ if __name__ == '__main__':
     if args.file is None:
         parser.print_help()
     else:
-        points, climb_rate = parse_file(args.file)
+        points, climb_rate, duration = parse_file(args.file)
 
         draw_map(points, climb_rate)
+
+        print("Duration of the flight: {}".format(datetime.timedelta(seconds=duration)))
