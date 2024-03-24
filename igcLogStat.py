@@ -88,11 +88,12 @@ def get_max_gain(alt_data):
                 cur_max = alt
                 max_time = time
 
-    print("Max gain: {}, start: {}, min alt: {}, end: {}, max alt: {}".format(max_gain_delta,
-                                                    format(datetime.timedelta(seconds=max_gain_start)),
-                                                    format(max_gain_min_alt),
-                                                    format(datetime.timedelta(seconds=max_gain_end)),
-                                                    format(max_gain_max_alt)))
+    print("Max gain: {}, start: {}, min alt: {}, end: {}, max alt: {}"
+          .format(max_gain_delta,
+                  format(datetime.timedelta(seconds=max_gain_start)),
+                  format(max_gain_min_alt),
+                  format(datetime.timedelta(seconds=max_gain_end)),
+                  format(max_gain_max_alt)))
 
     return max_gain_delta
 
