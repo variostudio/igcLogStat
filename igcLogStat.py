@@ -170,8 +170,7 @@ if __name__ == '__main__':
         parser.print_help()
     else:
         points, climb_rate, duration, max_gain = parse_file(args.file)
+        print("Max altitude gain of the flight: {}".format(max_gain))
+        print("Duration of the flight: {}".format(datetime.timedelta(seconds=duration)))
 
         draw_map(points, climb_rate)
-
-        print("Duration of the flight: {}".format(datetime.timedelta(seconds=duration)))
-        print("Max altitude gain of the flight: {}".format(max_gain))
