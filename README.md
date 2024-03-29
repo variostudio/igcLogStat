@@ -6,3 +6,4 @@ This is the tool for analysis of IGC files.
 2. Flight duration
 
 ## This tool plot the path of IGC trek to html map.
+![Example](/img/img1.jpg)
