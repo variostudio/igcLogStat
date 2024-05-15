@@ -22,7 +22,8 @@ def ts_to_sec(ts):
     return int(hours) * 3600 + int(minutes) * 60 + int(seconds)
 
 
-def parse_igc_line(file_item, pts, alts, rates):
+
+def parse_igc_line(file_item, pts, alts, rates, lineNumber):
     if file_item.startswith('B'):
         time_stamp = file_item[1:7]
         seconds = ts_to_sec(time_stamp)
@@ -38,7 +39,7 @@ def parse_igc_line(file_item, pts, alts, rates):
             aa = alts[-1]
             rates.append((n_alt - aa[1]) / (seconds - aa[0]))
 
-        alts.append([seconds, n_alt])
+        alts.append([seconds, n_alt, lineNumber])
         pts.append([n_lat, n_lon])
 
 
@@ -57,16 +58,20 @@ def get_max_gain(alt_data):
     i = 0
     cur_min = 100000
     min_time = 0
+    min_line = 0
     cur_max = 0
     max_time = 0
+    max_line = 0
 
     max_gain_delta = 0
     max_gain_min_alt = 0
     max_gain_max_alt = 0
     max_gain_start = 0
     max_gain_end = 0
+    max_gain_start_line = 0
+    max_gain_end_line = 0
 
-    for time, alt in alt_data:
+    for time, alt, lineNumber in alt_data:
         i += 1
         if i > 300:
             if alt < cur_min:
@@ -78,15 +83,19 @@ def get_max_gain(alt_data):
                     max_gain_end = max_time
                     max_gain_min_alt = cur_min
                     max_gain_max_alt = cur_max
+                    max_gain_start_line = min_line
+                    max_gain_end_line = max_line
 
                 cur_min = alt
                 min_time = time
+                min_line = lineNumber
                 cur_max = 0
                 max_time = 0
 
             if alt > cur_max:
                 cur_max = alt
                 max_time = time
+                max_line = lineNumber
 
     print("Max gain: {}, start: {}, min alt: {}, end: {}, max alt: {}"
           .format(max_gain_delta,
@@ -95,6 +104,8 @@ def get_max_gain(alt_data):
                   format(datetime.timedelta(seconds=max_gain_end)),
                   format(max_gain_max_alt)))
 
+    print("Line number for base: {}, Line number for maximum: {}".format(max_gain_start_line, max_gain_end_line))
+
     return max_gain_delta
 
 
@@ -102,11 +113,13 @@ def parse_file(file_name):
     pts = []
     alt_data = []
     climb_rates = []
+    lineNumber = 0
 
     print('Processing {}'.format(file_name))
     with open(file_name) as f:
         for line in f:
-            parse_igc_line(line, pts, alt_data, climb_rates)
+            parse_igc_line(line, pts, alt_data, climb_rates, lineNumber)
+            lineNumber += 1
 
     return pts, climb_rates, alt_data[-1][0]-alt_data[0][0], get_max_gain(alt_data)
 
